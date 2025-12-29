@@ -1,0 +1,81 @@
+# ============================================================================
+# m-Greedy Optimal Configuration
+# ============================================================================
+# Baseline: Modified Greedy Caching
+#
+# This configuration achieved validation score 0.685 among 125 tested
+# configurations on a 10,000-query validation dataset.
+#
+# Grid Search Ranges:
+#   window_size: {200, 250, 300, 350, 400}
+#   refresh_threshold: {0.30, 0.35, 0.40, 0.45, 0.50}
+#   decay_factor: {0.75, 0.80, 0.85, 0.90, 0.95}
+# ============================================================================
+
+method: "m-Greedy"
+validation_score: 0.685
+
+# ============================================================================
+# m-Greedy Parameters
+# ============================================================================
+# m-Greedy maintains a sliding window of recent queries and uses
+# exponentially decaying access frequency to make caching decisions.
+# ============================================================================
+
+window_size: 300
+# Description: Size of the query history window
+# Unit: number of queries
+# Interpretation: Only the most recent 300 queries are considered for
+#                 frequency calculations
+# Impact: Larger window → more stable but less adaptive
+#         Smaller window → more adaptive but potentially noisy
+
+refresh_threshold: 0.40
+# Description: Freshness threshold for triggering refresh
+# Range: [0, 1]
+# Formula: if freshness(CI) < refresh_threshold, then refresh
+# Interpretation: Context items below 40% freshness are refreshed
+# Note: Freshness calculated as time-based decay similar to CF
+
+decay_factor: 0.85
+# Description: Exponential decay rate for access frequency
+# Range: [0, 1]
+# Formula: frequency(t) = frequency(t-1) · decay_factor + current_access
+# Interpretation: Access counts decay by 15% per time unit
+# Impact: Higher decay → favor recent accesses more
+#         Lower decay → maintain long-term access history
+
+# ============================================================================
+# Caching Strategy
+# ============================================================================
+# m-Greedy evicts the item with:
+#   - Lowest decayed access frequency, OR
+#   - Freshness below refresh_threshold (refreshed instead of cached)
+#
+# Decision logic:
+#   1. Compute decayed frequency for each cached item
+#   2. Check freshness against threshold
+#   3. If fresh and frequently accessed → keep
+#   4. If fresh but rarely accessed → candidate for eviction
+#   5. If stale → refresh or evict based on frequency
+# ============================================================================
+
+# ============================================================================
+# Common Parameters (All Methods)
+# ============================================================================
+
+cache_size: 500
+# Description: Maximum number of context items in cache
+
+warmup_queries: 1000
+# Description: Number of queries to initialize frequency statistics
+
+# ============================================================================
+# Performance on Test Set (50,000 queries)
+# ============================================================================
+# Results reported in paper Section V:
+#   Cache Hit Ratio (CHR): 64.8%
+#   Cache Expired Ratio (CER): 22.3%
+#   Response Time (RT): 195 ms
+#   Cache Refresh Ratio (CRR): 58.7%
+# ============================================================================

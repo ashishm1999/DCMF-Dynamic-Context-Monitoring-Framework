@@ -1,0 +1,124 @@
+# ============================================================================
+# DCMF Optimal Configuration
+# ============================================================================
+# Paper: "DCMF: A Dynamic Context Monitoring and Caching Framework 
+#         for Context Management Platforms"
+# Journal: IEEE Transactions on Emerging Topics in Computational Intelligence
+#
+# This configuration achieved the highest validation score (0.847) among
+# 1,280 tested configurations on a 10,000-query validation dataset.
+#
+# Grid Search Ranges:
+#   alpha: {0.4, 0.5, 0.6, 0.7}
+#   beta: {0.3, 0.4, 0.5, 0.6, 0.7}
+#   lambda: {0.005, 0.01, 0.015, 0.02}
+#   kappa: {1.0, 1.2, 1.5, 1.8, 2.0}
+#   u_max_poa: {0.20, 0.25, 0.30, 0.35}
+#   u_max_cf: {0.15, 0.20, 0.25, 0.30}
+# ============================================================================
+
+method: "DCMF"
+validation_score: 0.847
+
+# ============================================================================
+# Context Evaluation Engine (CEE) Parameters
+# ============================================================================
+
+# PoA (Probability of Access) Calculation
+alpha: 0.60
+# Description: Balance between historical patterns and real-time queries
+# Range: [0, 1]
+# - Higher values (→1): Favor historical access patterns
+# - Lower values (→0): Favor recent query trends
+# Optimal: 0.60 (60% historical, 40% real-time)
+
+beta: 0.50
+# Description: Balance between utility score and PoA in priority calculation
+# Range: [0, 1]  
+# Formula: Priority(CI) = β·U(CI) + (1-β)·PoA(CI)
+# Optimal: 0.50 (equal weighting)
+
+# ============================================================================
+# Context Management Module (CMM) Parameters
+# ============================================================================
+
+# Context Freshness (CF) Decay
+lambda: 0.01
+# Description: Decay constant for exponential freshness function
+# Formula: CF(CI) = exp(-λ·Δt)
+# Units: per second
+# Half-life: ln(2)/λ ≈ 69 seconds
+# Interpretation: Context is considered 50% fresh after 69 seconds
+
+# Threshold Determination
+kappa: 1.5
+# Description: Sensitivity parameter for threshold calculation
+# Formula: 
+#   θ_update = μ_CF - κ·σ_CF
+#   θ_evict = μ_CF - 2κ·σ_CF
+# Statistical meaning: 93rd percentile (bottom 7% flagged for refresh)
+# Impact: Controls aggressiveness of cache management
+
+# DST Mass Assignment - Uncertainty Modeling
+u_max_poa: 0.30
+# Description: Maximum ignorance mass for PoA metric
+# Range: [0, 1)
+# Formula: u(PoA) = u_max_poa · 4·p(PoA)·(1-p(PoA))
+# Interpretation: Maximum 30% uncertainty at ambiguous PoA values (p=0.5)
+# Rationale: PoA has higher variability than CF due to access pattern noise
+
+u_max_cf: 0.25
+# Description: Maximum ignorance mass for CF metric
+# Range: [0, 1)
+# Formula: u(CF) = u_max_cf · 4·p(CF)·(1-p(CF))
+# Interpretation: Maximum 25% uncertainty at ambiguous CF values (p=0.5)
+# Rationale: CF has more predictable temporal decay
+
+# ============================================================================
+# Calibration Bounds (Computed from Warm-up Period)
+# ============================================================================
+# These values are determined from the first 1,000 queries (warm-up phase)
+# They represent the 20th and 80th percentiles of observed metric distributions
+
+L_poa: 0.15
+# Description: Lower calibration bound for PoA (20th percentile)
+# Updated during warm-up phase
+
+U_poa: 0.92
+# Description: Upper calibration bound for PoA (80th percentile)
+# Updated during warm-up phase
+
+L_cf: 0.20
+# Description: Lower calibration bound for CF (20th percentile)
+# Updated during warm-up phase
+
+U_cf: 0.85
+# Description: Upper calibration bound for CF (80th percentile)
+# Updated during warm-up phase
+
+# ============================================================================
+# Common Parameters (All Methods)
+# ============================================================================
+
+cache_size: 500
+# Description: Maximum number of context items in cache
+# Unit: number of items
+
+warmup_queries: 1000
+# Description: Number of queries for initialization phase
+# Purpose: Compute initial statistics (percentiles, means, variances)
+# Note: Performance metrics NOT recorded during warm-up
+
+# ============================================================================
+# Performance on Test Set (50,000 queries)
+# ============================================================================
+# Results reported in paper Section V:
+#   Cache Hit Ratio (CHR): 82.3%
+#   Cache Expired Ratio (CER): 6.2%
+#   Response Time (RT): 120 ms
+#   Cache Refresh Ratio (CRR): 38.5%
+#
+# Comparison to best baseline (m-CAC):
+#   Absolute improvement: +15.3 percentage points CHR
+#   Relative improvement: +22.9% CHR
+# ============================================================================

@@ -1,0 +1,84 @@
+# ============================================================================
+# m-Myopic Optimal Configuration
+# ============================================================================
+# Baseline: Modified Myopic Caching
+#
+# This configuration achieved validation score 0.625 among 25 tested
+# configurations on a 10,000-query validation dataset.
+#
+# Grid Search Ranges:
+#   update_interval: {30, 45, 60, 90, 120}
+#   priority_threshold: {0.40, 0.45, 0.50, 0.55, 0.60}
+# ============================================================================
+
+method: "m-Myopic"
+validation_score: 0.625
+
+# ============================================================================
+# m-Myopic Parameters
+# ============================================================================
+# m-Myopic uses periodic updates and priority-based caching.
+# It makes "myopic" (short-sighted) decisions based on immediate utility
+# without considering long-term access patterns.
+# ============================================================================
+
+update_interval: 45
+# Description: Time interval for periodic context updates
+# Unit: seconds
+# Interpretation: All cached context items are refreshed every 45 seconds
+# Rationale: Balances freshness with update overhead
+# Impact: Shorter interval → fresher data but higher cost
+#         Longer interval → lower cost but staler data
+
+priority_threshold: 0.50
+# Description: Minimum priority score for caching a context item
+# Range: [0, 1]
+# Interpretation: Only items with priority ≥ 0.50 are cached
+# Formula: priority = f(recency, size, query_frequency)
+# Impact: Higher threshold → more selective caching
+#         Lower threshold → cache more items
+
+# ============================================================================
+# Caching Strategy
+# ============================================================================
+# m-Myopic operates in fixed time intervals:
+#
+# Every update_interval seconds:
+#   1. Refresh all cached items (fetch from providers)
+#   2. Compute priority for each potential cache item
+#   3. Cache items with priority ≥ priority_threshold
+#   4. Evict items with priority < priority_threshold
+#
+# Between updates:
+#   - Serve from cache (may become stale)
+#   - No dynamic refresh decisions
+#   - No adaptive threshold adjustment
+#
+# This "myopic" approach is simple but can lead to:
+#   - Higher cache expired ratio (items go stale between updates)
+#   - Missed opportunities (no adaptive refresh for frequently accessed items)
+#   - Unnecessary updates (refreshes rarely accessed items)
+# ============================================================================
+
+# ============================================================================
+# Common Parameters (All Methods)
+# ============================================================================
+
+cache_size: 500
+# Description: Maximum number of context items in cache
+
+warmup_queries: 1000
+# Description: Number of queries to establish initial priority estimates
+
+# ============================================================================
+# Performance on Test Set (50,000 queries)
+# ============================================================================
+# Results reported in paper Section V:
+#   Cache Hit Ratio (CHR): 58.2%
+#   Cache Expired Ratio (CER): 28.9%
+#   Response Time (RT): 215 ms
+#   Cache Refresh Ratio (CRR): 65.3%
+#
+# Note: This method has the highest CER due to periodic (non-adaptive)
+#       refresh strategy, resulting in stale data between update intervals.
+# ============================================================================
