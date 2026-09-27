@@ -16,13 +16,19 @@ This repository contains the optimal hyperparameter configurations for all metho
 
 ## 📂 Repository Contents
 ```
-DCMF-IoT-Caching/
+DCMF-Dynamic-Context-Monitoring-Framework/
 ├── README.md                    # This file
-└── configs/
-    ├── dcmf_optimal.yaml       # DCMF (proposed method)
-    ├── mcac_optimal.yaml       # m-CAC baseline
-    ├── greedy_optimal.yaml     # m-Greedy baseline
-    └── myopic_optimal.yaml     # m-Myopic baseline
+├── configs/
+│   ├── dcmf_optimal.yaml       # DCMF (proposed method)
+│   ├── mcac_optimal.yaml       # m-CAC baseline
+│   ├── greedy_optimal.yaml     # m-Greedy baseline
+│   └── myopic_optimal.yaml     # m-Myopic baseline
+└── revision/
+    ├── analysis/               # exact DST decision analysis and worked examples
+    ├── tools/                  # result tables (mean ± SD, 95% CI, paired tests) and figures
+    ├── templates/              # input formats for the tools
+    ├── figures/                # generated figures
+    └── results/                # generated CSV outputs
 ```
 
 **Note:** Full source code implementation will be released upon paper acceptance.
@@ -31,11 +37,17 @@ DCMF-IoT-Caching/
 
 ## ⚙️ Experimental Setup
 
-All methods were evaluated using:
+The 70,000-query roadwork trace is split chronologically into four disjoint segments:
 
-- **Warm-up period:** 1,000 queries (initialize statistics)
-- **Validation set:** 10,000 queries (hyperparameter tuning)
-- **Test set:** 50,000 queries (final evaluation, reported in paper)
+| Segment | Queries | Query range | Purpose |
+|---|---|---|---|
+| Warm-up | 1,000 | 1–1,000 | statistics, calibration bounds, thresholds (not scored) |
+| Training | 9,000 | 1,001–10,000 | initial parameter exploration; cross-validation |
+| Validation | 10,000 | 10,001–20,000 | hyperparameter selection (all methods) |
+| Test | 50,000 | 20,001–70,000 | final evaluation (all reported results) |
+
+Further settings:
+
 - **Cache size:** 500 items (all methods)
 - **Tuning metric:** Composite score = 0.6×CHR + 0.3×(1-CER) + 0.1×(1/RT)
 
@@ -137,12 +149,12 @@ Contents:
 
 To reproduce the results from the paper:
 
-1. **Initialization Phase (1,000 queries):**
+1. **Initialization Phase (1,000 warm-up queries):**
    - Load configuration from `configs/[method]_optimal.yaml`
    - Compute warm-up statistics (percentiles, means, variances)
    - Do not record performance metrics
 
-2. **Evaluation Phase (50,000 queries):**
+2. **Evaluation Phase (50,000 test queries, 20,001–70,000):**
    - Apply optimal parameters from configuration
    - Record CHR, CER, RT, CRR metrics
    - Compare against paper Table V
@@ -157,6 +169,29 @@ To reproduce the results from the paper:
 ## 📖 Paper Citation
 
 If you use these configurations or methods in your research, please cite
+
+---
+
+## 🔬 Reproducibility Scripts
+
+`revision/` contains scripts that recompute the analytic parts of the paper and build the result tables:
+
+| Script | Output |
+|---|---|
+| `revision/analysis/dst_worked_example.py` | Worked DST example, decision trajectory (keep → refresh → evict) versus time since last update, `figures/fig_dst_decision_trajectory.pdf` |
+| `revision/analysis/appendix_a_audit.py` | Exact values of every numerical example in Appendix A (`results/appendix_a_audit.csv`) |
+| `revision/analysis/umax_decision_surface.py` | Sensitivity of the CMM decisions to `u_max_poa` and `u_max_cf` over the calibrated evidence space (`figures/fig_umax_decision_surface.pdf`) |
+| `revision/tools/make_stats_tables.py` | LaTeX result tables with mean ± SD, 95% confidence intervals (Student t) and paired Wilcoxon / t-tests with Holm correction, from one CSV row per run |
+| `revision/tools/fig11_small_multiples.py` | Overall comparison with one panel (and unit) per metric |
+| `revision/tools/fig12_throughput.py` | Throughput versus load in requests per minute (TP = 60·N_c/T) |
+
+Requirements: Python ≥ 3.9 with `numpy`, `scipy`, `pandas`, `matplotlib`.
+
+```bash
+cd revision/analysis && python3 dst_worked_example.py && python3 appendix_a_audit.py && python3 umax_decision_surface.py
+python3 revision/tools/make_stats_tables.py runs.csv --out tables \
+    --metric 'CHR:CHR (\%):100:1:max' --metric 'CER:CER (\%):100:1:min' --metric 'RT_ms:RT (ms):1:1:min'
+```
 
 ---
 
@@ -192,10 +227,11 @@ Configuration files in this repository are released under CC BY 4.0.
 
 **Fairness in Baseline Comparisons:**
 
-All baseline methods (m-CAC, m-Greedy, m-Myopic) were given equal opportunity for optimization:
-Identical validation dataset
-Comprehensive grid search over reasonable parameter ranges
-Same evaluation metrics and composite score
-Same computational budget (3 runs per configuration)
+All baseline methods (m-CAC, m-Greedy, m-Myopic) were tuned under the same protocol as DCMF:
+
+- Identical validation segment (queries 10,001–20,000)
+- Grid search over each method's parameters at a comparable per-parameter resolution (4–5 values per parameter)
+- Same evaluation metrics and composite score
+- Same number of runs per configuration (3 seeds)
 
 The performance gains reported in the paper reflect genuine algorithmic improvements, not favorable hyperparameter selection for DCMF.
