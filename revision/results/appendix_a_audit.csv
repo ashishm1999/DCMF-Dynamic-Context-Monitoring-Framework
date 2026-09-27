@@ -1,0 +1,43 @@
+example,quantity,published,recomputed,status
+A.6 (main worked example),CF,0.301,0.3012,OK
+A.6 (main worked example),m_PoA_C,0.6183,0.6184,OK
+A.6 (main worked example),m_PoA_E,0.1752,0.1752,OK
+A.6 (main worked example),m_PoA_T,0.2065,0.2064,OK
+A.6 (main worked example),m_CF_C,0.135,0.1352,OK
+A.6 (main worked example),m_CF_E,0.7337,0.7333,OK
+A.6 (main worked example),m_CF_T,0.1313,0.1314,OK
+A.6 (main worked example),K,0.4773,0.4772,OK
+A.6 (main worked example),BetP,0.3944,0.3947,OK
+A.6 (main worked example),decision,keep,keep,OK
+"A.7.1 (high PoA, high CF)",CF,0.7408,0.7408,OK
+"A.7.1 (high PoA, high CF)",m_PoA_C,0.728,0.8189,MISMATCH
+"A.7.1 (high PoA, high CF)",m_PoA_E,0.073,0.0819,MISMATCH
+"A.7.1 (high PoA, high CF)",m_CF_C,0.694,0.7157,MISMATCH
+"A.7.1 (high PoA, high CF)",m_CF_E,0.14,0.1445,MISMATCH
+"A.7.1 (high PoA, high CF)",K,0.153,0.1769,MISMATCH
+"A.7.1 (high PoA, high CF)",BetP,0.874,0.9459,MISMATCH
+"A.7.1 (high PoA, high CF)",decision,keep,keep,OK
+"A.7.2 (low PoA, low CF)",CF,0.0498,0.0498,OK
+"A.7.2 (low PoA, low CF)",m_PoA_C,0.0,0.0,OK
+"A.7.2 (low PoA, low CF)",m_PoA_E,1.0,1.0,OK
+"A.7.2 (low PoA, low CF)",m_CF_C,0.0,0.0,OK
+"A.7.2 (low PoA, low CF)",m_CF_E,1.0,1.0,OK
+"A.7.2 (low PoA, low CF)",K,0.0,0.0,OK
+"A.7.2 (low PoA, low CF)",BetP,0.0,0.0,OK
+"A.7.2 (low PoA, low CF)",decision,evict,evict,OK
+"A.7.3 as printed (PoA 0.535, dt 102 s)",CF,0.325,0.3606,MISMATCH
+"A.7.3 as printed (PoA 0.535, dt 102 s)",m_PoA_C,0.35,0.35,OK
+"A.7.3 as printed (PoA 0.535, dt 102 s)",m_PoA_E,0.35,0.35,OK
+"A.7.3 as printed (PoA 0.535, dt 102 s)",m_PoA_T,0.3,0.3,OK
+"A.7.3 as printed (PoA 0.535, dt 102 s)",m_CF_C,0.375,0.2011,MISMATCH
+"A.7.3 as printed (PoA 0.535, dt 102 s)",m_CF_E,0.375,0.6129,MISMATCH
+"A.7.3 as printed (PoA 0.535, dt 102 s)",m_CF_T,0.25,0.186,MISMATCH
+"A.7.3 as printed (PoA 0.535, dt 102 s)",K,0.263,0.2849,MISMATCH
+"A.7.3 as printed (PoA 0.535, dt 102 s)",BetP,0.505,0.3129,MISMATCH
+"A.7.3 as printed (PoA 0.535, dt 102 s)",decision,keep,refresh,MISMATCH
+A.8.1 (very high conflict),CF,0.0067,0.0067,OK
+A.8.1 (very high conflict),K,0.82,0.9445,MISMATCH
+A.8.1 (very high conflict),decision,refresh (high conflict),refresh (high conflict),OK
+A.8.2 (PoA above U),m_PoA_C,1.0,1.0,OK
+A.7.3 intended (p(PoA)=p(CF)=0.5),dt giving p(CF)=0.5,102 s,64.4 s (CF = 0.525),MISMATCH
+A.7.3 intended (p(PoA)=p(CF)=0.5),BetP,0.505,0.5,MISMATCH

@@ -1,0 +1,6 @@
+PoA,transitions
+0.5,keep from 0.0 s; refresh from 83.2 s; evict from 138.8 s
+0.65,keep from 0.0 s; refresh from 105.4 s; evict from 146.6 s
+0.75,keep from 0.0 s; refresh from 122.0 s; evict from 151.6 s
+0.85,keep from 0.0 s; refresh (high conflict) from 137.1 s
+0.95,keep from 0.0 s; refresh (high conflict) from 115.1 s
