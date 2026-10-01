@@ -1,6 +1,7 @@
 """Fig. 11 redesign: one panel per metric, each with its own unit-labelled y-axis.
 
 Input CSV (long format): method,metric,unit,mean,sd
+The default data (templates/fig11_data.csv) is the balanced-scenario table (DCMF vs m-CAC).
     metric - display name, e.g. "Cache hit ratio"
     unit   - axis unit, e.g. "%", "ms", "req/min", "utilisation (%)"
     sd     - optional; drawn as an error bar when present
@@ -50,7 +51,7 @@ def main():
             yerr = None if pd.isna(sd) else float(sd)
             ax.bar(j, mu, width=0.7, color=SHADE[j % 4], hatch=HATCH[j % 4], edgecolor="black", lw=0.5,
                    yerr=yerr, capsize=2, error_kw={"lw": 0.6})
-            ax.text(j, mu, f"{mu:.1f}", ha="center", va="bottom", fontsize=5.5)
+            ax.text(j, mu, f"{mu:g}", ha="center", va="bottom", fontsize=6)
         ax.set_xticks(range(len(methods)))
         ax.set_xticklabels(methods, rotation=35, ha="right", fontsize=6)
         ax.set_ylabel(unit, fontsize=7)

@@ -23,12 +23,15 @@ import numpy as np
 
 THETA_U, THETA_E, K_HIGH = 0.38, 0.11, 0.70
 REF = (0.30, 0.25)
-GRID = [0.0, 0.10, 0.20, 0.25, 0.30, 0.35, 0.40, 0.50]
+GRID = [0.0, 0.10, 0.15, 0.20, 0.25, 0.30, 0.35, 0.40, 0.50]
 
 
 def masses(p, umax):
     u = umax * 4.0 * p * (1.0 - p)
     return (1.0 - u) * p, (1.0 - u) * (1.0 - p), u
+
+
+CONFLICT_RULE = "literal"   # "literal": K >= K_high always refreshes (as published); "directional": see below
 
 
 def decide(pp, pc, up, uc):
@@ -43,10 +46,13 @@ def decide(pp, pc, up, uc):
     act = np.full(pp.shape, 0)                       # 0 keep
     act = np.where(~high & (betp < THETA_U) & (betp >= THETA_E), 1, act)   # 1 refresh
     act = np.where(~high & (betp < THETA_E), 2, act)                        # 2 evict
-    # conflict policy: K >= K_high is resolved by a refresh when the conflict stems from stale
-    # freshness evidence (m_CF(Evict) > m_CF(Cache)); otherwise (low PoA, fresh copy) the item is kept
-    act = np.where(high & (b_e > b_c), 3, act)       # 3 refresh (conflict)
-    act = np.where(high & (b_e <= b_c), 0, act)
+    # conflict policy for K >= K_high: "literal" refreshes (Eq. decision rule as published);
+    # "directional" refreshes only when the CF evidence is stale (m_CF(Evict) > m_CF(Cache)), else keeps
+    if CONFLICT_RULE == "literal":
+        act = np.where(high, 3, act)                 # 3 refresh (conflict)
+    else:
+        act = np.where(high & (b_e > b_c), 3, act)   # refresh only when CF evidence is stale
+        act = np.where(high & (b_e <= b_c), 0, act)  # otherwise keep
     return act, betp, k
 
 
@@ -55,7 +61,10 @@ def main():
     ap.add_argument("--n", type=int, default=401)
     ap.add_argument("--weights", default=None)
     ap.add_argument("--outdir", default=os.path.join(os.path.dirname(__file__), ".."))
+    ap.add_argument("--conflict-rule", choices=["literal", "directional"], default="literal")
     a = ap.parse_args()
+    global CONFLICT_RULE
+    CONFLICT_RULE = a.conflict_rule
 
     if a.weights:
         import pandas as pd

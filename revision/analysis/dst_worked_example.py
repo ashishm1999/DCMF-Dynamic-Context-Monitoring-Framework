@@ -6,8 +6,8 @@ since last update to show where the decision rule
     BetP(Cache) >= theta_update                 -> keep
     theta_evict <= BetP(Cache) < theta_update   -> refresh
     BetP(Cache) <  theta_evict                  -> evict
-    K >= K_high and m_CF(Evict) > m_CF(Cache)   -> refresh (conflict policy, Section III-B.1)
-    K >= K_high and m_CF(Evict) <= m_CF(Cache)  -> keep (low demand, fresh copy)
+    K >= K_high                                 -> refresh (conflict policy, as published)
+    (--conflict-rule directional: refresh only if m_CF(Evict) > m_CF(Cache), else keep)
 
 moves an item from keep to refresh to evict. Everything here is closed-form
 arithmetic on the published equations and parameter values; no simulation.
@@ -27,6 +27,9 @@ L_CF, U_CF = 0.20, 0.85
 UMAX_POA, UMAX_CF = 0.30, 0.25
 THETA_UPDATE, THETA_EVICT = 0.38, 0.11
 K_HIGH = 0.70
+# Conflict policy for K >= K_HIGH. "literal": always refresh (Algorithm CMM as published);
+# "directional": refresh only when the conflict stems from stale CF evidence, otherwise keep.
+CONFLICT_RULE = "literal"
 
 
 def calibrate(x, lo, hi):
@@ -58,7 +61,10 @@ def decide(poa, dt, theta_u=THETA_UPDATE, theta_e=THETA_EVICT, lam=LAMBDA):
     k = comb["K"]
     if k >= K_HIGH:
         betp = float("nan") if k >= 1.0 else comb["C"] + comb["T"] / 2.0
-        action = "refresh (high conflict)" if mc["E"] > mc["C"] else "keep (high conflict)"
+        if CONFLICT_RULE == "literal" or mc["E"] > mc["C"]:
+            action = "refresh (high conflict)"
+        else:
+            action = "keep (high conflict)"
     else:
         betp = comb["C"] + comb["T"] / 2.0
         if betp >= theta_u:
@@ -99,7 +105,10 @@ def print_steps(r, title):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--outdir", default=os.path.join(os.path.dirname(__file__), "..", "results"))
+    ap.add_argument("--conflict-rule", choices=["literal", "directional"], default="literal")
     args = ap.parse_args()
+    global CONFLICT_RULE
+    CONFLICT_RULE = args.conflict_rule
     os.makedirs(args.outdir, exist_ok=True)
 
     orig = decide(0.75, 120)
