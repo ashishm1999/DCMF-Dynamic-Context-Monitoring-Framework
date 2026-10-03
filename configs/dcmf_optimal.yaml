@@ -8,13 +8,13 @@
 # This configuration achieved the highest validation score (0.847) among
 # 1,280 tested configurations on a 10,000-query validation dataset.
 #
-# Grid Search Ranges:
+# Grid Search Ranges (5 x 4 x 4 x 4 x 4 = 1,280 configurations):
 #   alpha: {0.4, 0.5, 0.6, 0.7}
-#   beta: {0.3, 0.4, 0.5, 0.6, 0.7}
 #   lambda: {0.005, 0.01, 0.015, 0.02}
 #   kappa: {1.0, 1.2, 1.5, 1.8, 2.0}
 #   u_max_poa: {0.20, 0.25, 0.30, 0.35}
 #   u_max_cf: {0.15, 0.20, 0.25, 0.30}
+# beta is fixed at 0.50 (equal weighting) and is not part of the grid search.
 # ============================================================================
 
 method: "DCMF"
@@ -36,7 +36,7 @@ beta: 0.50
 # Description: Balance between utility score and PoA in priority calculation
 # Range: [0, 1]  
 # Formula: Priority(CI) = β·U(CI) + (1-β)·PoA(CI)
-# Optimal: 0.50 (equal weighting)
+# Fixed: 0.50 (equal weighting; not tuned)
 
 # ============================================================================
 # Context Management Module (CMM) Parameters
